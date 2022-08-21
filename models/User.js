@@ -5,8 +5,8 @@ const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Please provide name"],
-    minlenght: 3,
-    maxlength: 20,
+    minLength: 3,
+    maxLength: 20,
     trim: true
   },
   email: {
@@ -21,18 +21,18 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "Please provide password"],
-    minlenght: 6,
+    minLength: 6,
   },
   lastName: {
     type: String,
     trim: true,
-    maxlength: 20,
+    maxLength: 20,
     default: 'lastName'
   },
   location: {
     type: String,
     trim: true,
-    maxlength: 20,
+    minLength: 20,
     default: 'my city'
   },
 });
