@@ -1,0 +1,4 @@
+{
+  "autoimport.showNotifications": false,
+  "autoimport.filesToScan": "**/*.{ts,tsx, js}"
+}
