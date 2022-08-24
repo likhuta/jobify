@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Logo, FormRow, Alert } from "../components";
 import Wrapper from "../assets/wrappers/RegisterPage";
-import { useAppContext } from '../context/appContext'
+import { useAppContext } from "../context/appContext";
 
 const initialState = {
   name: "",
@@ -12,10 +12,10 @@ const initialState = {
 
 function Register() {
   const [values, setValues] = useState(initialState);
-  const { isLoading, showAlert, displayAlert } = useAppContext()
+  const { isLoading, showAlert, displayAlert, registerUser } = useAppContext();
 
   const handleChange = (e) => {
-    setValues({...values, [e.target.name]: e.target.value} )
+    setValues({ ...values, [e.target.name]: e.target.value });
     console.log(e.target);
   };
 
@@ -26,12 +26,24 @@ function Register() {
   const onSubmit = (e) => {
     e.preventDefault();
 
-    const { name, email, password, isMember } = values
+    const { name, email, password, isMember } = values;
     if (!email || !password || (!isMember && !name)) {
-      displayAlert()
-      return
+      displayAlert();
+      return;
     }
-    console.log(values)
+
+    const currentUser = {
+      name,
+      email,
+      password,
+    };
+
+    if(isMember) {
+      console.log('already a member');
+    } else {
+      registerUser(currentUser)
+    }
+    console.log(values);
   };
   return (
     <Wrapper className="full-page">
@@ -65,7 +77,7 @@ function Register() {
           handleChange={handleChange}
         />
 
-        <button type="submit" className="btn btn-block">
+        <button type="submit" className="btn btn-block" disabled={isLoading}>
           submit
         </button>
         <p>
