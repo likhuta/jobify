@@ -13,7 +13,7 @@ const initialState = {
 
 function Register() {
   const [values, setValues] = useState(initialState);
-  const { isLoading, showAlert, displayAlert, registerUser, loginUser } = useAppContext();
+  const { isLoading, showAlert, displayAlert, registerUser, loginUser, setupUser } = useAppContext();
   const { user } = useAppContext()
   const navigate = useNavigate()
 
@@ -24,7 +24,7 @@ function Register() {
       }, 3000)
     }
   }, [user, navigate])
-  
+
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
     console.log(e.target);
@@ -50,11 +50,10 @@ function Register() {
     };
 
     if(isMember) {
-      loginUser(currentUser)
+      setupUser({currentUser, endPoint: 'login', alertText: 'Login Successful! Redirecting...',})
     } else {
-      registerUser(currentUser)
+      setupUser({currentUser, endPoint: 'register', alertText: 'User Created! Redirecting...',})
     }
-    console.log(values);
   };
   return (
     <Wrapper className="full-page">
