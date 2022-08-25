@@ -3,7 +3,8 @@ import {
   CLEAR_ALERT,
   SETUP_USER_BEGIN,
   SETUP_USER_SUCCESS,
-  SETUP_USER_ERROR
+  SETUP_USER_ERROR,
+  TOGGLE_SIDEBAR
 } from "./actions";
 
 const reducer = (state, action) => {
@@ -46,7 +47,12 @@ const reducer = (state, action) => {
       alertType: "danger",
       alertText: action.payload.msg,
     };
+  } else if (action.type === TOGGLE_SIDEBAR){
+    return {
+      ...state, showSidebar: !state.showSidebar,
+    }
   }
+
   throw new Error(`no such action :${action.type}`);
 };
 export default reducer;
