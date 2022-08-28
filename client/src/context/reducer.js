@@ -10,6 +10,7 @@ import {
   UPDATE_USER_SUCCESS,
   UPDATE_USER_ERROR,
   HANDLE_CHANGE,
+  CLEAR_VALUES,
 } from "./actions";
 import { initialState } from "./appContext";
 
@@ -88,11 +89,25 @@ const reducer = (state, action) => {
       alertType: "danger",
       alertText: action.payload.msg,
     };
-  } else if( action.type === HANDLE_CHANGE) {
-    return{
+  } else if (action.type === HANDLE_CHANGE) {
+    return {
       ...state,
-      [action.payload.name]: action.payload.value
-    }
+      [action.payload.name]: action.payload.value,
+    };
+  } else if (action.type === CLEAR_VALUES) {
+    const initialState = {
+      isEditing: false,
+      editJobId: "",
+      position: "",
+      company: "",
+      jobLocation: state.userLocation,
+      jobType: "full-time",
+      status: "pending",
+    };
+    return {
+      ...state,
+      ...initialState,
+    };
   }
 
   throw new Error(`no such action :${action.type}`);
