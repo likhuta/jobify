@@ -1,4 +1,4 @@
-import { FormRow, Alert } from "../../components";
+import { FormRow, Alert, FormRowSelect } from "../../components";
 import { useAppContext } from "../../context/appContext";
 import Wrapper from "../../assets/wrappers/DashboardFormPage";
 
@@ -23,13 +23,13 @@ const AddJob = () => {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if(!position || !company || !jobLocation) {
-      displayAlert()
-      return
+    if (!position || !company || !jobLocation) {
+      displayAlert();
+      return;
     }
-    console.log('create job')
+    console.log("create job");
   };
 
   return (
@@ -61,24 +61,22 @@ const AddJob = () => {
             handleChange={handleJobInput}
           />
           {/* job type */}
-          <div className="form-row">
-            <label htmlFor="jobType" className="form-label">
-              job type
-            </label>
-            <select name="jobType" value={jobType} onChange={handleJobInput} className='form-select'>
-              {jobTypeOptions.map((itemValue, index) => {
-                return(
-                  <option key={index} value={itemValue}>
-                    {itemValue}
-                  </option>
-                )
-              })}
-            </select>
-          </div>
+          <FormRowSelect
+            name="status"
+            value={status}
+            handleChange={handleJobInput}
+            list={statusOptions}
+          />
 
           {/* job status */}
+          <FormRowSelect
+            labelText="job type"
+            name="jobType"
+            value={jobType}
+            handleChange={handleJobInput}
+            list={jobTypeOptions}
+          />
 
-          
           <div className="btn-container">
             <button
               className="btn btn-block submit-btn"
