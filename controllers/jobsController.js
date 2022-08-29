@@ -2,6 +2,7 @@ import Job from "../models/Job.js";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError, NotFoundError } from "../errors/index.js";
 import checkPermission from "../utils/checkPermissions.js";
+import mongoose from "mongoose";
 
 const createJob = async (req, res) => {
   // res.send('create job')
@@ -59,12 +60,22 @@ const deleteJob = async (req, res) => {
   // check permission
   checkPermission(req.user, job.createdBy);
 
-  await job.remove()
-  res.status(StatusCodes.OK).json({ msg: 'Success! Job removed' })
+  await job.remove();
+  res.status(StatusCodes.OK).json({ msg: "Success! Job removed" });
 };
 
 const showStats = async (req, res) => {
-  res.send("show stats");
+  let stats = await Job.aggregate([
+    { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+    { $group: { _id: "$status", count: { $sum: 1 } } },
+  ]);
+
+  stats = stats.reduce((acc, curr) => {
+    const { _id: title, count } = curr;
+    acc[title] = count;
+    return acc;
+  }, {});
+  res.status(StatusCodes.OK).json({ stats });
 };
 
 export { createJob, deleteJob, getAllJobs, updateJob, showStats };
