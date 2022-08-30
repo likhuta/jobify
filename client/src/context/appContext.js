@@ -79,7 +79,6 @@ const AppProvider = ({ children }) => {
   // for request
   authFetch.interceptors.request.use(
     (config) => {
-      console.log("request", config);
       config.headers.common["Authorization"] = `Bearer ${state.token}`;
       return config;
     },
@@ -94,7 +93,6 @@ const AppProvider = ({ children }) => {
       return response;
     },
     (err) => {
-      console.log(err.response);
       if (err.response.status === 401) {
         logoutUser();
       }
@@ -234,8 +232,7 @@ const AppProvider = ({ children }) => {
         },
       });
     } catch (error) {
-      // logoutUser()
-      console.log(error.response);
+      logoutUser()
     }
     clearAlert();
   };
@@ -275,8 +272,7 @@ const AppProvider = ({ children }) => {
       await authFetch.delete(`/jobs/${jobId}`);
       getJobs();
     } catch (error) {
-      console.log(error);
-      // logoutUser()
+      logoutUser()
     }
   };
 
@@ -292,8 +288,7 @@ const AppProvider = ({ children }) => {
         },
       });
     } catch (error) {
-      console.log(error);
-      // logoutUser()
+      logoutUser()
     }
     clearAlert();
   };
