@@ -25,6 +25,7 @@ import {
   EDIT_JOB_ERROR,
   SHOW_STATS_BEGIN,
   SHOW_STATS_SUCCESS,
+  CLEAR_FILTERS,
 } from "./actions";
 import axios from "axios";
 
@@ -47,16 +48,21 @@ const initialState = {
   position: "",
   company: "",
   jobLocation: userLocation || "",
-  jobTypeOptions: ['full-time', 'part-time', 'remote', 'internship'],
-  jobType: 'full-time',
-  statusOptions: ['pending', 'interview', 'declined'],
-  status: 'pending',
+  jobTypeOptions: ["full-time", "part-time", "remote", "internship"],
+  jobType: "full-time",
+  statusOptions: ["pending", "interview", "declined"],
+  status: "pending",
   jobs: [],
   totalJobs: 0,
   numOfPages: 1,
   page: 1,
   stats: {},
-  monthlyApplications: []
+  monthlyApplications: [],
+  search: "",
+  searchStatus: "all",
+  searchType: "all",
+  sort: "latest",
+  sortOptions: ["latest", "oldest", "a-z", "z-a"],
 };
 
 const AppContext = React.createContext();
@@ -72,6 +78,7 @@ const AppProvider = ({ children }) => {
   // for request
   authFetch.interceptors.request.use(
     (config) => {
+      console.log("request", config);
       config.headers.common["Authorization"] = `Bearer ${state.token}`;
       return config;
     },
@@ -88,7 +95,7 @@ const AppProvider = ({ children }) => {
     (err) => {
       console.log(err.response);
       if (err.response.status === 401) {
-        logoutUser()
+        logoutUser();
       }
       return Promise.reject(err);
     }
@@ -168,43 +175,50 @@ const AppProvider = ({ children }) => {
         dispatch({
           type: UPDATE_USER_ERROR,
           payload: { msg: err.response.data.msg },
-        })
+        });
       }
     }
     clearAlert();
   };
 
-  const handleChange = ({name, value}) => {
-    dispatch({ type: HANDLE_CHANGE, payload: {name, value}})
-  }
+  const handleChange = ({ name, value }) => {
+    dispatch({ type: HANDLE_CHANGE, payload: { name, value } });
+  };
 
   const clearValues = () => {
-    dispatch({type: CLEAR_VALUES})
-  }
+    dispatch({ type: CLEAR_VALUES });
+  };
 
-  const createJob = async() => {
-    dispatch({type: CREATE_JOB_BEGIN})
+  const createJob = async () => {
+    dispatch({ type: CREATE_JOB_BEGIN });
     try {
-      const { position, company, jobLocation, jobType, status} = state
-      await authFetch.post('/jobs', {
-        company, position, jobLocation, jobType, status
-      })
-      dispatch({type: CREATE_JOB_SUCCESS})
-      dispatch({type: CLEAR_VALUES})
+      const { position, company, jobLocation, jobType, status } = state;
+      await authFetch.post("/jobs", {
+        company,
+        position,
+        jobLocation,
+        jobType,
+        status,
+      });
+      dispatch({ type: CREATE_JOB_SUCCESS });
+      dispatch({ type: CLEAR_VALUES });
     } catch (error) {
-      if(error.response.status === 401) return
-      dispatch({type: CREATE_JOB_ERROR, payload: {  msg: error.response.data.msg}})
+      if (error.response.status === 401) return;
+      dispatch({
+        type: CREATE_JOB_ERROR,
+        payload: { msg: error.response.data.msg },
+      });
     }
-    clearAlert()
-  }
+    clearAlert();
+  };
 
   const getJobs = async () => {
-    let url = `/jobs`
+    let url = `/jobs`;
 
-    dispatch({type: GET_JOBS_BEGIN})
+    dispatch({ type: GET_JOBS_BEGIN });
     try {
-      const { data } = await authFetch(url)
-      const { jobs, totalJobs, numOfPages } = data
+      const { data } = await authFetch(url);
+      const { jobs, totalJobs, numOfPages } = data;
       dispatch({
         type: GET_JOBS_SUCCESS,
         payload: {
@@ -212,64 +226,75 @@ const AppProvider = ({ children }) => {
           totalJobs,
           numOfPages,
         },
-      })
+      });
     } catch (error) {
       // logoutUser()
-      console.log(error.response)
+      console.log(error.response);
     }
-    clearAlert()
-  }
+    clearAlert();
+  };
 
   const setEditJob = (id) => {
-    dispatch({ type: SET_EDIT_JOB, payload: { id } })
-  }
+    dispatch({ type: SET_EDIT_JOB, payload: { id } });
+  };
   const editJob = async () => {
-    dispatch({type: EDIT_JOB_BEGIN})
+    dispatch({ type: EDIT_JOB_BEGIN });
 
     try {
-      const { position, company, jobLocation, jobType, status} = state
+      const { position, company, jobLocation, jobType, status } = state;
       await authFetch.patch(`/jobs/${state.editJobId}`, {
-        company, position, jobLocation, jobType, status
-      })
+        company,
+        position,
+        jobLocation,
+        jobType,
+        status,
+      });
 
-      dispatch({type: EDIT_JOB_SUCCESS})
-      dispatch({type: CLEAR_VALUES})
+      dispatch({ type: EDIT_JOB_SUCCESS });
+      dispatch({ type: CLEAR_VALUES });
     } catch (error) {
-      if (error.response.status === 401) return
+      if (error.response.status === 401) return;
       dispatch({
         type: EDIT_JOB_ERROR,
         payload: { msg: error.response.data.msg },
-      })
+      });
     }
 
-    clearAlert()
-  }
+    clearAlert();
+  };
   const deleteJob = async (jobId) => {
-    dispatch({type: DELETE_JOB_BEGIN})
+    dispatch({ type: DELETE_JOB_BEGIN });
 
     try {
-      await authFetch.delete(`/jobs/${jobId}`)
-      getJobs()
+      await authFetch.delete(`/jobs/${jobId}`);
+      getJobs();
     } catch (error) {
-      console.log(error)
+      console.log(error);
       // logoutUser()
     }
-  }
+  };
 
   const showStats = async () => {
-    dispatch({type: SHOW_STATS_BEGIN})
+    dispatch({ type: SHOW_STATS_BEGIN });
     try {
-      const { data} = await authFetch('/jobs/stats')
-      dispatch({type: SHOW_STATS_SUCCESS, payload: {
-        stats: data.defaultStats,
-        monthlyApplications: data.monthlyApplications
-      }})
+      const { data } = await authFetch("/jobs/stats");
+      dispatch({
+        type: SHOW_STATS_SUCCESS,
+        payload: {
+          stats: data.defaultStats,
+          monthlyApplications: data.monthlyApplications,
+        },
+      });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       // logoutUser()
     }
-    clearAlert()
-  }
+    clearAlert();
+  };
+
+  const clearFilters = () => {
+    dispatch({ type: CLEAR_FILTERS });
+  };
 
   return (
     <AppContext.Provider
@@ -288,6 +313,7 @@ const AppProvider = ({ children }) => {
         editJob,
         deleteJob,
         showStats,
+        clearFilters,
       }}
     >
       {children}
