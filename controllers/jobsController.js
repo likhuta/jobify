@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import moment from 'moment'
+import moment from "moment";
 import Job from "../models/Job.js";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError, NotFoundError } from "../errors/index.js";
@@ -16,8 +16,42 @@ const createJob = async (req, res) => {
   const job = await Job.create(req.body);
   res.status(StatusCodes.CREATED).json({ job });
 };
+
 const getAllJobs = async (req, res) => {
-  const jobs = await Job.find({ createdBy: req.user.userId });
+  const { status, jobType, sort, search } = req.query;
+
+  const queryObject = {
+    createdBy: req.user.userId,
+  };
+
+  if (status !== "all") {
+    queryObject.status = status;
+  }
+  if (jobType !== "all") {
+    queryObject.jobType = jobType;
+  }
+  if (search) {
+    queryObject.position = { $regex: search, $options: "i" };
+  }
+  
+  let result = Job.find(queryObject);
+
+  // sort
+  if(sort === 'latest') {
+    result = result.sort("-createdAt")
+  }
+  if(sort === 'oldest') {
+    result = result.sort("createdAt")
+  }
+  if (sort === 'a-z') {
+    result = result.sort('position')
+  }
+  if (sort === 'z-a') {
+    result = result.sort('-position')
+  }
+
+  const jobs = await result;
+
   res.status(StatusCodes.OK).json({
     jobs,
     totalJobs: jobs.length,
@@ -89,24 +123,32 @@ const showStats = async (req, res) => {
       $group: {
         _id: {
           year: {
-            $year: '$createdAt',
+            $year: "$createdAt",
           },
           month: {
-            $month: '$createdAt',
+            $month: "$createdAt",
           },
         },
         count: { $sum: 1 },
       },
     },
-    { $sort: { '_id.year': -1, '_id.month': -1 } },
+    { $sort: { "_id.year": -1, "_id.month": -1 } },
     { $limit: 6 },
   ]);
 
-  monthlyApplications = monthlyApplications.map((item) => {
-    const {_id:{year, month}, count} = item
-    const date = moment().month(month - 1).year(year).format("MMM Y")
-    return { date, count}
-  }).reverse()
+  monthlyApplications = monthlyApplications
+    .map((item) => {
+      const {
+        _id: { year, month },
+        count,
+      } = item;
+      const date = moment()
+        .month(month - 1)
+        .year(year)
+        .format("MMM Y");
+      return { date, count };
+    })
+    .reverse();
 
   res.status(StatusCodes.OK).json({ defaultStats, monthlyApplications });
 };
